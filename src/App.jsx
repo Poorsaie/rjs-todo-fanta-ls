@@ -1,69 +1,63 @@
-import { Header } from "./components/Header"
-import { Tabs } from "./components/Tabs"
-import { TodoList } from "./components/TodoList"
-import { TodoInput } from "./components/TodoInput"
+import { Header } from './components/Header'
+import { Tabs } from './components/Tabs'
+import { TodoList } from './components/TodoList'
+import { TodoInput } from './components/TodoInput'
+import { Footer } from './components/Footer'
 
-import {useState, useEffect} from 'react'
+import { useState , useEffect } from 'react'
 
-function App() {
-  // const todos = [
-  //   { input: "Hello, Add your first todo!" , complete: true },
-  //   { input: "Get your shit together !" , complete: false },
-  //   { input: "Learn Ract" , complete: false },
-  //   { input: "Say hi to granny" , complete: true },
-  // ]
 
-  const [todos , setTodos] = 
-    useState([])
+function App () {
+  const [todos , setTodos] = useState([])
+  const [activeTab , setActiveTab] = useState('All')
 
-    const [selectedTab , setSelectedTab] = useState('All')
+  function handleAddTodo (data) {
+    let newTodos = [...todos , {input : data, complete : false}]
+    setTodos(newTodos)
+    handleSaveData(newTodos)
+  }
 
-    function handleAddTodo(newTodo) {
-      const newTodoList = [...todos, {input : newTodo , complete: false}]
-      setTodos(newTodoList)
-      handleSaveData(newTodoList)
-    }
+  function handleDeleteTodo(index) {
+    let newTodos = todos.filter((todo, i) => {return i !== index})
+    // let newTodos = todos.filter((todo, i) => i !== index)
+    setTodos(newTodos)
+    handleSaveData(newTodos)
+  }
 
-    function handleCompleteTodo(index) {
-      let newTodoList = [...todos]
-      let completedTodo = todos[index]
-      completedTodo['complete'] = true
-      newTodoList[index] = completedTodo
-      setTodos(newTodoList)
-      handleSaveData(newTodoList)
-    }
+  function handleUpdateTodo (index) {
+    let newTodos = [...todos]
+    newTodos[index].complete = true;
+    setTodos(newTodos)
+    handleSaveData(newTodos)
+  }
 
-    function handleDeleteTodo(index) {
-      let newTodoList = todos.filter((val , valIndex) => {
-        return valIndex !== index
-      })
-      setTodos(newTodoList)
-      handleSaveData(newTodoList)
-    }
-
-    function handleSaveData(currntTodos) {
-      localStorage.setItem('todo-app', JSON.stringify({ todos : currntTodos }))
-    }
+  function handleSaveData(newTodos) {
+    localStorage.setItem('todo-app', JSON.stringify({ todos : newTodos }))
+  }
 
     useEffect(() => {
       if (!localStorage || !localStorage.getItem('todo-app')) { return }
       let db = JSON.parse(localStorage.getItem('todo-app'))
       setTodos(db.todos)
     }, [])
+    
 
   return (
     <>
-        <Header todos={todos} />
-        <Tabs 
-          selectedTab={selectedTab} 
-          setSelectedTab={setSelectedTab} todos={todos} 
-        />
-        <TodoList 
-          handleDeleteTodo={handleDeleteTodo} 
-          handleCompleteTodo={handleCompleteTodo} 
-          selectedTab={selectedTab} todos={todos} 
-        />
-        <TodoInput handleAddTodo={handleAddTodo} />
+      <Header todos={todos} />
+      <Tabs 
+        todos={todos} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+      />
+      <TodoList 
+        todos={todos} 
+        activeTab={activeTab} 
+        handleDeleteTodo={handleDeleteTodo} 
+        handleUpdateTodo={handleUpdateTodo} 
+      />
+      <TodoInput handleAddTodo={handleAddTodo} /> 
+      <Footer />
     </>
   )
 }
