@@ -1,63 +1,65 @@
 import { Header } from './components/Header'
 import { Tabs } from './components/Tabs'
-import { TodoList } from './components/TodoList'
-import { TodoInput } from './components/TodoInput'
+import { TaskInput } from './components/TaskInput'
 import { Footer } from './components/Footer'
-
-import { useState , useEffect } from 'react'
-
+import { useState , useEffect , useRef } from 'react'
+import { TaskList } from './components/TaskList'
 
 function App () {
-  const [todos , setTodos] = useState([])
+
+  const id = useRef(1000)
+  const [tasks , setTasks] = useState([])
   const [activeTab , setActiveTab] = useState('All')
 
-  function handleAddTodo (data) {
-    let newTodos = [...todos , {input : data, complete : false}]
-    setTodos(newTodos)
-    handleSaveData(newTodos)
+  function setUnique () {
+    return ++id.current
   }
 
-  function handleDeleteTodo(index) {
-    let newTodos = todos.filter((todo, i) => {return i !== index})
-    // let newTodos = todos.filter((todo, i) => i !== index)
-    setTodos(newTodos)
-    handleSaveData(newTodos)
+  function handleAddTask (taskName) {
+    let newTasks = [...tasks , {unique : setUnique() , input : taskName , complete : false}]
+    setTasks(newTasks)
+    handleSaveData(newTasks)
   }
 
-  function handleUpdateTodo (index) {
-    let newTodos = [...todos]
-    newTodos[index].complete = true;
-    setTodos(newTodos)
-    handleSaveData(newTodos)
+  function handleDeleteTask (taskIndex) {
+    let newTasks = tasks.filter((task , indx) => indx != taskIndex )
+    setTasks(newTasks)
+    handleSaveData(newTasks)
   }
 
-  function handleSaveData(newTodos) {
-    localStorage.setItem('todo-app', JSON.stringify({ todos : newTodos }))
+  function handleUpdateTask (taskIndex) {
+    let newTasks = [...tasks]
+    newTasks[taskIndex].complete = true
+    setTasks(newTasks)
+    handleSaveData(newTasks)
   }
 
-    useEffect(() => {
-      if (!localStorage || !localStorage.getItem('todo-app')) { return }
-      let db = JSON.parse(localStorage.getItem('todo-app'))
-      setTodos(db.todos)
-    }, [])
-    
+  function handleSaveData (newTasks) {
+    localStorage.setItem('todo-app' , JSON.stringify( { tasks : newTasks } ))
+  }
+
+  useEffect(() => {
+    if (!localStorage || !localStorage.getItem('todo-app')) return
+    let db = JSON.parse(localStorage.getItem('todo-app'))
+    setTasks(db.tasks)
+  } , [])
 
   return (
     <>
-      <Header todos={todos} />
-      <Tabs 
-        todos={todos} 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-      />
-      <TodoList 
-        todos={todos} 
-        activeTab={activeTab} 
-        handleDeleteTodo={handleDeleteTodo} 
-        handleUpdateTodo={handleUpdateTodo} 
-      />
-      <TodoInput handleAddTodo={handleAddTodo} /> 
-      <Footer />
+        <Header taskCount = { tasks.length } />
+        <Tabs 
+          tasks = { tasks } 
+          activeTab = { activeTab } 
+          setActiveTab = {setActiveTab}
+        />
+        <TaskList 
+          tasks = { tasks }
+          activeTab = { activeTab }
+          handleDeleteTask = { handleDeleteTask }
+          handleUpdateTask = { handleUpdateTask }
+        />
+        <TaskInput handleAddTask = { handleAddTask }/>
+        <Footer />
     </>
   )
 }
